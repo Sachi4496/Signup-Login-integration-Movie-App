@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie App</title>
+</head>
+
+<style>
+    * {
+        color: white;
+        background-color: black;
+    }
+
+    input {
+        width: 200px;
+    }
+
+    #movies {
+        height: 200px;
+        width: 410px;
+        border: 1px solid black;
+        overflow: scroll;
+        border-top: none;
+        display: none;
+        /* position: absolute; */
+    }
+
+    #details {
+        width: 80%;
+        display: grid;
+        grid-template-columns: 29% 60%;
+        grid-gap: 5px;
+        margin: 20px auto;
+        justify-content: center;
+    }
+
+    #details img {
+        width: 100%;
+        height: 320px;
+    }
+
+    #details div {
+        background-color: grey;
+        border-radius: 5px;
+        color: black;
+    }
+
+    #details p {
+        margin-left: 30px;
+        margin-top: 20px;
+        background-color: grey;
+        color: black;
+        font-weight: bold;
+    }
+
+    #maindiv {
+        width: 300px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #search input {
+        width: 400px;
+        height: 25px;
+        border: 2px solid gray;
+    }
+
+    #topRated {
+        width: 95%;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        grid-gap: 10px;
+    }
+
+    #topRated img {
+        width: 250px;
+        height: 250px;
+    }
+    
+    h3{
+        margin-left: 20px;
+        color: red;
+    }
+    .main{
+        width: 90%;
+    }
+    .main li{
+        list-style: none;
+        float: right;
+    }
+    .main  a{
+        font-size: 20px;
+        color: blue;
+        text-decoration: none;
+    }
+</style>
+
+<body>
+    <div class="main">
+        <li><a href="signup.html" id="update">SignUp/login</a></li>
+    </div>
+    <div id="maindiv">
+        <div id="search">
+            <input oninput="debounce(main,1000)" type="text" id="movie" placeholder="Enter movie name" />
+        </div>
+        <div id="movies"></div>
+    </div>
+    <div id="details"></div>
+    <h3>Top Rated Movies</h3>
+    <div id="topRated"></div>
+</body>
+
+</html>
+
+<script>
+
+    //search Movies => done
+
+    var timerId;
+
+    let movies_div = document.getElementById("movies");
+
+    async function searchMovies(movie_name) {
+        try {
+            let res = await fetch(`https://www.omdbapi.com/?apikey=65714494&s=${movie_name}`);
+            let data = await res.json();
+            console.log("data-----:", data);
+
+            return data;
+        } catch (e) {
+            // alert("not found")
+            console.log("e:", e)
+        }
+
+    }
+
+    // searchMovies("inception");
+    var movie_details = document.getElementById("details");
+    var errorData = document.getElementById("error");
+
+    function appendMovies(movies) {
+
+        // details.innerHTML = null;
+
+        movies_div.innerHTML = null;
+
+        if (movies === undefined) {
+            alert("Movies not found")
+        } else {
+
+            details.innerHTML = null;
+
+            // movie_details.style.display = "grid";
+
+
+            movies.forEach(function (movie) {
+                let p = document.createElement("p");
+
+                p.innerText = movie.Title;
+                movies_div.append(p);
+
+
+                p.addEventListener("click", function () {
+                    // p.style.color = "red";
+                    console.log("acccs:", movie);
+
+
+                    movie_details.innerText = null;
+
+
+
+                    imb(movie.imdbID);
+
+                    async function imb(IMDbId) {
+                        let res = await fetch(`http://www.omdbapi.com/?i=${IMDbId}&apikey=65714494`);
+                        let data = await res.json();
+                        console.log("data---", data);
+
+                        let left = document.createElement("div");
+                        let right = document.createElement("div");
+
+                        let img = document.createElement("img");
+
+                        img.src = data.Poster;
+
+                        left.append(img);
+
+                        let name = document.createElement("p");
+
+                        name.innerText = "Title: " + data.Title;
+
+                        name.setAttribute("style", "font-size:20px; font-weight:bold;")
+
+                        let Released = document.createElement("p");
+
+                        Released.innerText = "Year: " + data.Released;
+
+                        let imdbID = document.createElement("p");
+                        imdbID.setAttribute("style", "color:gold;");
+                        imdbID.innerText = "imdbID: " + data.imdbRating + "*";
+
+                        let Language = document.createElement("p");
+
+                        Language.innerText = "Language: " + data.Language;
+
+                        let Runtime = document.createElement("p");
+
+                        Runtime.innerText = "Runtime: " + data.Runtime;
+
+                        let Actors = document.createElement("p");
+
+                        Actors.innerText = "Actors: " + data.Actors;
+
+                        let Writer = document.createElement("p");
+
+                        Writer.innerText = "Writer: " + data.Writer;
+
+                        right.append(name, Released, Language, imdbID, Runtime, Actors, Writer);
+                        movie_details.append(left, right);
+                    }
+
+
+
+                });
+            });
+        }
+
+    }
+
+    async function main() {
+        let name = document.getElementById("movie").value;
+
+        //get search movies
+
+        if (name.length < 3) {
+            return false;
+        }
+
+        movies_div.style.display = "block";
+
+        // movies_div.addEventListener("mouseenter",()=>{
+        //     movies_div.style.display = "block"
+        // })
+
+
+
+        let res = await searchMovies(name);
+
+        let movie_data = res.Search;
+        appendMovies(movie_data);
+        console.log("res---", movie_data);
+
+
+    }
+
+
+    function debounce(func, delay) {
+
+        //lets take about A
+        //func = main()
+
+        //ave = setTimeout -  func - main- searchMovie("ave")
+        //aven - clear the previous timeout - setTimeout - func - main- searchMovie("ave")
+
+        if (timerId) {
+            clearTimeout(timerId);
+        }
+
+
+        timerId = setTimeout(function () {
+
+            func();
+
+        }, delay);
+
+    }
+
+    //47b7bf83eb7ad6a0059d9b3d51af2706
+
+    async function topRated() {
+        try {
+            let res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=47b7bf83eb7ad6a0059d9b3d51af2706&language=en-US&page=1`);
+            let data = await res.json();
+            console.log("Top Rated:", data);
+            console.log("average_rating ", data.results, data.results[0].original_title);
+            topRatedMovies(data.results, data.results);
+            return data;
+        } catch (e) {
+            // alert("not found")
+            console.log("e:", e)
+        }
+
+    }
+    topRated();
+
+    var topRated = document.getElementById("topRated");
+    function topRatedMovies(data) {
+        // console.log("appendMovies",data);
+
+        data.forEach(function (movie) {
+            var div = document.createElement("div");
+
+            var img = document.createElement("img");
+            img.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+
+            var name = document.createElement("p");
+            name ="Name: "+ movie.title;
+            var br = document.createElement("br");
+
+            var vote = document.createElement("p");
+            vote ="Rating: "+ movie.vote_average+"*";
+
+            div.append(img,br, name,br, vote);
+            topRated.append(div);
+        })
+    }
+
+
+    let update = document.getElementById("update");
+
+    let d = JSON.parse(localStorage.getItem("loginData"));
+    console.log("dddd:--",d);
+    d.forEach((el)=>{
+        console.log(el.username);
+        update.innerText = null;
+        if(el.username === undefined){
+            update.innerText = "signup/login"
+        }else{
+        update.innerText = el.username;
+        }
+    })
+
+</script>
